@@ -30,8 +30,6 @@
             padding-bottom: 50%;
         }
 
-
-
         .page {
             padding: 2em;
             background: #cecece;
@@ -51,7 +49,23 @@
             box-shadow:
                 0 5px 10px rgba(0, 0, 0, 0.1),
                 0 20px 20px rgba(0, 0, 0, 0.05);
-            
+            /*
+                animation: fadeIn 0.5s ease-in-out; /* Animation added */
+        }
+
+        .article:hover
+        {
+            background: rgb(218, 218, 218);
+            animation: 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .article::after {
@@ -64,67 +78,31 @@
             position: 20%;
             max-width: 100%;
             max-height: auto;
-            
         }
 
         .newsTitle {
-            
             font-size: large;
             font-weight: bold;
             padding: 1em 1em 1em 1em; /* Adjust padding as needed */
             text-align: center; /* Center-align the title */
         }
 
-        .news-date
-        {
+        .news-date {
             font-size: small;
             font-weight: normal;
             padding-top: 5%; /* Adjust padding as needed */
             padding-bottom: 5%;
             text-align: center; /* Center-align the title */
-
-        }
-/*
-        .article:nth-child(2) {
-            grid-column: 2/-1;
-            background: grey;
         }
 
-        .article:nth-child(8) {
-            grid-column: 1/-2;
-            background: grey;
+        .newsContent {
+            text-align: justify; /* Center-align the buttons */
         }
 
-        .article:nth-child(17) {
-            grid-column: 2/-2;
-            background: grey;
+        .newsContent button {
+            margin: 1em auto; /* Center the buttons horizontally */
+            display: block; /* Make buttons block-level for centering */
         }
-
-        .article:nth-child(24) {
-            grid-column: 1/3;
-            background: grey;
-        }
-
-        .article:nth-child(29) {
-            grid-column: -3/-1;
-            background: grey;
-        }
-
-        .article:nth-child(35) {
-            grid-column: 2/-2;
-            background: grey;
-        }
-
-        .article:nth-child(42) {
-            grid-column: 1/-1;
-            background: grey;
-        }
-
-        .article:nth-child(50) {
-            grid-column: 3/-2;
-            background: grey;
-        }
-        */
     </style>
 </head>
 <body>
@@ -134,63 +112,71 @@
     </div>
 
     <script>
-        async function fetchNews() {
-            try {
-                const response = await fetch('news.json');
-                const newsData = await response.json();
+async function fetchNews() {
+    try {
+        const response = await fetch('news.json');
+        const newsData = await response.json();
 
-                const newsContainer = document.getElementById('news-container');
+        const newsContainer = document.getElementById('news-container');
 
-                newsData.forEach((news, index) => {
-                    const article = document.createElement('article');
-                    article.classList.add('article');
-                    
+        newsData.forEach((news, index) => {
+            const article = document.createElement('article');
+            article.classList.add('article');
 
-                   // const hrContent = document.createElement('hr');
-                    //article.appendChild(hrContent);
+            const newsTitle = document.createElement('div');
+            newsTitle.classList.add('newsTitle');
+            newsTitle.textContent = news.title;
+            article.appendChild(newsTitle);
 
-                    const newsTitle = document.createElement('div');
-                    newsTitle.classList.add('newsTitle');
-                    newsTitle.textContent = news.title;
-                    article.appendChild(newsTitle);
+            const newsDate = document.createElement('div');
+            newsDate.classList.add('news-date');
+            newsDate.textContent = new Date(news.date).toLocaleString('en-US', { timeZone: 'UTC' });
+            article.appendChild(newsDate);
 
-                    const newsDate = document.createElement('div');
-                    newsDate.classList.add('news-date');
-                    newsDate.textContent = new Date(news.date).toLocaleString('en-US', { timeZone: 'UTC' });
-                    article.appendChild(newsDate);
-
-                    // Add image if available
-                    if (news.images && news.images.length > 0) {
-                        const imageContainer = document.createElement('div');
-                        const img = document.createElement('img');
-                        img.src = news.images[0]; // Display only the first image
-                        imageContainer.appendChild(img);
-                        article.appendChild(imageContainer);
-                    }
-
-                    const newsContent = document.createElement('div');
-                    const contentSnippet = document.createElement('div');
-                    contentSnippet.textContent = news.summary.length > 250 ? news.summary.substring(0, 250) + '...' : news.summary;
-                    newsContent.appendChild(contentSnippet);
-
-                    const readMoreButton = document.createElement('button');
-                    readMoreButton.textContent = 'Read more';
-                    readMoreButton.onclick = () => {
-                        contentSnippet.textContent = news.content;
-                        readMoreButton.style.display = 'none';
-                    };
-                    newsContent.appendChild(readMoreButton);
-
-                    article.appendChild(newsContent);
-
-                    newsContainer.appendChild(article);
-                });
-            } catch (error) {
-                console.error('Error fetching news:', error);
+            if (news.images && news.images.length > 0) {
+                const imageContainer = document.createElement('div');
+                const img = document.createElement('img');
+                img.src = news.images[0];
+                imageContainer.appendChild(img);
+                article.appendChild(imageContainer);
             }
-        }
 
-        window.onload = fetchNews;
+            const newsContent = document.createElement('div');
+            newsContent.classList.add('newsContent'); // Add this class for centering buttons
+            const contentSnippet = document.createElement('div');
+            contentSnippet.textContent = news.summary.length > 250 ? news.summary.substring(0, 250) + '...' : news.summary;
+            newsContent.appendChild(contentSnippet);
+
+            const readMoreButton = document.createElement('button');
+            readMoreButton.textContent = 'Read more';
+            readMoreButton.onclick = () => {
+                contentSnippet.textContent = news.content;
+                readMoreButton.style.display = 'none';
+                readLessButton.style.display = 'inline'; // Show "Read less" button
+            };
+            newsContent.appendChild(readMoreButton);
+
+            const readLessButton = document.createElement('button'); // Add "Read less" button
+            readLessButton.textContent = 'Read less';
+            readLessButton.style.display = 'none'; // Initially hide the "Read less" button
+            readLessButton.onclick = () => {
+                contentSnippet.textContent = news.summary.length > 250 ? news.summary.substring(0, 250) + '...' : news.summary;
+                readMoreButton.style.display = 'inline'; // Show "Read more" button
+                readLessButton.style.display = 'none'; // Hide "Read less" button again
+            };
+            newsContent.appendChild(readLessButton);
+
+            article.appendChild(newsContent);
+
+            newsContainer.appendChild(article);
+        });
+    } catch (error) {
+        console.error('Error fetching news:', error);
+    }
+}
+
+window.onload = fetchNews;
+
     </script>
 </body>
 </html>
