@@ -3,180 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Viewer</title>
+    <title>News Cards</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Young+Serif&display=swap');
+        * {
+            box-sizing: border-box;
+        }
         body {
-            background: #001628;
-            color: #777;
-            padding: 4em;
-            font-family: sans-serif;
-            line-height: 1.15;
+            font-family: sans-serif, Arial, Helvetica, sans-serif;
+            font-weight:300;
+            font-size: 80%;
+            background: #ccc;
+            line-height: 1.2;
+            margin: 4em;
         }
-
-        hr {
-            /* Dummy content */
-            height: 6px;
-            border: none;
-            background: rgba(0, 0, 0, 0.1);
+        img {
+            width: 100%;
         }
-
-        hr:last-child {
-            /* Dummy content */
-            margin-right: 60%;
-        }
-
-        hr.image {
-            /* Dummy content */
-            padding-bottom: 50%;
-        }
-
-        .page {
-            padding: 2em;
-            background: #cecece;
-            max-width: 100%;
-        }
-
-        .archive {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            grid-gap: 1em;
-            grid-auto-flow: dense;
-        }
-
-        .article {
-            padding: 1em;
+        article {
+            padding: 20px;
+            border: 1px solid #999;
+            border-radius: 5px;
             background: #fff;
-            box-shadow:
-                0 5px 10px rgba(0, 0, 0, 0.1),
-                0 20px 20px rgba(0, 0, 0, 0.05);
-            /*
-                animation: fadeIn 0.5s ease-in-out; /* Animation added */
+            text-align: justify;
+        }
+        a:link,
+        a:visited {
+            color: black;
+        }
+        h3 {
+            text-align: center;
+            align-content: center;
+            justify-content: center;
+            margin-top: 0.25rem;
+            margin-left: 0.75rem;
+
+        }
+        .date{
+            margin: 5px;
+            justify-content: center;
+            align-content: center;
+            display: flex;
+        }
+        main {
+            columns: 250px;
+            column-gap: 20px; 
+        }
+        article {
+            break-inside: avoid-column;
+            margin-bottom: 1rem; 
         }
 
-        .article:hover
-        {
-            background: rgb(218, 218, 218);
-            animation: 1.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .article::after {
-            color: white;
-            font-weight: bold;
-            font-family: courier;
-        }
-
-        .article img {
-            position: 20%;
-            max-width: 100%;
-            max-height: auto;
-        }
-
-        .newsTitle {
+        nav {
+            background-color: #c4bfbf;
+            padding: 10px;
             font-size: large;
-            font-weight: bold;
-            padding: 1em 1em 1em 1em; /* Adjust padding as needed */
-            text-align: center; /* Center-align the title */
         }
-
-        .news-date {
-            font-size: small;
-            font-weight: normal;
-            padding-top: 5%; /* Adjust padding as needed */
-            padding-bottom: 5%;
-            text-align: center; /* Center-align the title */
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
         }
-
-        .newsContent {
-            text-align: justify; /* Center-align the buttons */
+        li {
+            display: inline-block;
+            margin-right: 20px;
         }
-
-        .newsContent button {
-            margin: 1em auto; /* Center the buttons horizontally */
-            display: block; /* Make buttons block-level for centering */
+        li:last-child {
+            margin-right: 0;
+        }
+        a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #555;
         }
     </style>
 </head>
 <body>
-    <div class="page">
-        <h1>LATEST NEWS</h1>
-        <div class="archive" id="news-container"></div>
-    </div>
+
+    <nav>
+        <ul>
+            <li><a href="#" onclick="fetchNews('SonDakika')">Son Dakika</a></li>
+            <li><a href="#" onclick="fetchNews('Gundem')">Gündem</a></li>
+            <li><a href="#" onclick="fetchNews('Turkiye')">Türkiye</a></li>
+            <li><a href="#" onclick="fetchNews('Dunya')">Dünya</a></li>
+            <li><a href="#" onclick="fetchNews('Spor')">Spor</a></li>
+            <li><a href="#" onclick="fetchNews('Egitim')">Eğitim</a></li>
+            
+        </ul>
+    </nav>
+    <main>
+        <!-- News articles will be dynamically generated here -->
+    </main>
 
     <script>
-async function fetchNews() {
+async function createArticles(category) {
     try {
         const response = await fetch('news.json');
-        const newsData = await response.json();
-        /* test note */
-        const newsContainer = document.getElementById('news-container');
+        if (!response.ok) {
+            throw new Error('Failed to fetch news data');
+        }
+        const data = await response.json();
 
-        newsData.forEach((news, index) => {
-            const article = document.createElement('article');
-            article.classList.add('article');
+        const mainElement = document.querySelector('main');
+        mainElement.innerHTML = ''; // Clear previous articles
 
-            const newsTitle = document.createElement('div');
-            newsTitle.classList.add('newsTitle');
-            newsTitle.textContent = news.title;
-            article.appendChild(newsTitle);
+        // Filter articles by category
+        const filteredArticles = data.filter(article => article.category === category);
 
-            const newsDate = document.createElement('div');
-            newsDate.classList.add('news-date');
-            newsDate.textContent = new Date(news.date).toLocaleString('en-US', { timeZone: 'UTC' });
-            article.appendChild(newsDate);
+        // Define array of ad URLs
+        const adUrls = [
+    'https://cdnuploads.aa.com.tr/uploads/sirkethaberleri/Contents/2022/02/22/thumbs_b_c_70aa145685ee09249fe4ff36d3168481.jpg',
+    'https://statics.vestel.com.tr/contents/images/archive/vestel-kirmizi-logo-buyuk1(1).png',
+    'https://cdnuploads.aa.com.tr/uploads/Contents/2020/03/04/thumbs_b_c_a5ba64a27d49a929e9fdf630ad8ba4a1.jpg',
+    // Add more ad URLs as needed
+    'https://cdnuploads.aa.com.tr/uploads/sirkethaberleri/Contents/2022/02/22/thumbs_b_c_70aa145685ee09249fe4ff36d3168481.jpg',
+    'https://statics.vestel.com.tr/contents/images/archive/vestel-kirmizi-logo-buyuk1(1).png',
+    'https://cdnuploads.aa.com.tr/uploads/Contents/2020/03/04/thumbs_b_c_a5ba64a27d49a929e9fdf630ad8ba4a1.jpg'
+    // Add more ad URLs as needed
+];
 
-            if (news.images && news.images.length > 0) {
-                const imageContainer = document.createElement('div');
-                const img = document.createElement('img');
-                img.src = news.images[0];
-                imageContainer.appendChild(img);
-                article.appendChild(imageContainer);
+        const numAds = Math.max(10, Math.floor(filteredArticles.length / 10)); // Ensure at least 10 ads
+
+        const adPositions = [];
+        while (adPositions.length < numAds) {
+            const randomIndex = Math.floor(Math.random() * filteredArticles.length);
+            if (!adPositions.includes(randomIndex)) {
+                adPositions.push(randomIndex);
             }
+        }
 
-            const newsContent = document.createElement('div');
-            newsContent.classList.add('newsContent'); // Add this class for centering buttons
-            const contentSnippet = document.createElement('div');
-            contentSnippet.textContent = news.summary.length > 250 ? news.summary.substring(0, 250) + '...' : news.summary;
-            newsContent.appendChild(contentSnippet);
+        let adIndex = 0;
+        let adCount = 0;
+        for (let i = 0; i < filteredArticles.length; i++) {
+            const article = filteredArticles[i];
+            const articleElement = document.createElement('article');
+            const imgElement = document.createElement('img');
+            const h3Element = document.createElement('h3');
+            const pElement = document.createElement('p');
+            const dateElement = document.createElement('date');
+            dateElement.classList.add("date");
 
-            const readMoreButton = document.createElement('button');
-            readMoreButton.textContent = 'Read more';
-            readMoreButton.onclick = () => {
-                contentSnippet.textContent = news.content;
-                readMoreButton.style.display = 'none';
-                readLessButton.style.display = 'inline'; // Show "Read less" button
-            };
-            newsContent.appendChild(readMoreButton);
+            imgElement.src = article.images[0];
+            imgElement.alt = article.title;
 
-            const readLessButton = document.createElement('button'); // Add "Read less" button
-            readLessButton.textContent = 'Read less';
-            readLessButton.style.display = 'none'; // Initially hide the "Read less" button
-            readLessButton.onclick = () => {
-                contentSnippet.textContent = news.summary.length > 250 ? news.summary.substring(0, 250) + '...' : news.summary;
-                readMoreButton.style.display = 'inline'; // Show "Read more" button
-                readLessButton.style.display = 'none'; // Hide "Read less" button again
-            };
-            newsContent.appendChild(readLessButton);
+            h3Element.textContent = article.title;
+            pElement.textContent = article.summary;
 
-            article.appendChild(newsContent);
+            const date = new Date(article.date);
+            const formattedDate = date.toLocaleString('tr-TR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                timeZoneName: 'short'
+            });
 
-            newsContainer.appendChild(article);
-        });
+            dateElement.textContent = formattedDate;
+
+            articleElement.appendChild(imgElement);
+            articleElement.appendChild(h3Element);
+            articleElement.appendChild(dateElement);
+            articleElement.appendChild(pElement);
+
+            mainElement.appendChild(articleElement);
+
+            // Insert ad at ad positions
+            if (adPositions.includes(i) && adIndex < adUrls.length) {
+                const adElement = document.createElement('article');
+                const adImgElement = document.createElement('img');
+
+                // Set ad image source randomly
+                adImgElement.src = adUrls[adIndex];
+                adImgElement.alt = 'Advertisement';
+
+                // Append ad element
+                mainElement.appendChild(adElement);
+                adElement.appendChild(adImgElement);
+
+                adIndex++;
+                adCount++;
+            }
+        }
+
+        // Fill remaining ads randomly if needed
+        while (adCount < numAds && adIndex < adUrls.length) {
+            const adElement = document.createElement('article');
+            const adImgElement = document.createElement('img');
+
+            // Set ad image source randomly
+            adImgElement.src = adUrls[adIndex];
+            adImgElement.alt = 'Advertisement';
+
+            // Append ad element
+            mainElement.appendChild(adElement);
+            adElement.appendChild(adImgElement);
+
+            adIndex++;
+            adCount++;
+        }
     } catch (error) {
-        console.error('Error fetching news:', error);
+        console.error('Error fetching news data:', error);
     }
 }
 
-window.onload = fetchNews;
+// Call the function with the category parameter when clicking on a category link
+function fetchNews(category) {
+    createArticles(category);
+}
+
+// Set default category to 'Gündem' when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    createArticles('Gundem'); // Default category is 'Gündem'
+})
+
+// Call the function with the category parameter when clicking on a category link
+function fetchNews(category) {
+    createArticles(category);
+}
+
+// Set default category to 'Gündem' when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    createArticles('Gundem'); // Default category is 'Gündem'
+});
 
     </script>
+    
 </body>
 </html>
